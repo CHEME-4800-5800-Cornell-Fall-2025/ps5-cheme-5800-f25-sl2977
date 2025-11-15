@@ -6,7 +6,7 @@
 This function computes the lookahead value for a given state-action pair `(s,a)`. 
 It uses a vector `U` to compute the value function.
 
-### Arguments
+### Arguments .
 - `p::MyMDPProblemModel`: the MDP problem model
 - `U::Vector{Float64}`: the value function vector
 - `s::Int64`: the state
