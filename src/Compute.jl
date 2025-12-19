@@ -104,8 +104,43 @@ function mysolve(model::MyValueIterationModel, problem::MyMDPProblemModel; ϵ::F
     tmp = zeros(Float64, number_of_actions); # temporary storage for action values
     Uold = zeros(Float64, number_of_states); # temporary storage for old value function
 
-    # TODO: Implement the value iteration with convergence checking algorithm
-    throw(ErrorError("Oooops!: You need to implement the value iteration with convergence checking algorithm!"))
+    # main iteration loop with convergence check
+    while (!converged && counter <= k_max)
+        
+        # store previous iteration values
+        copyto!(Uold, U);
+        
+        # update value function for each state
+        for state_idx ∈ eachindex(problem.𝒮)
+            current_state = problem.𝒮[state_idx];
+            
+            # evaluate all actions from this state
+            for action_idx ∈ eachindex(problem.𝒜)
+                current_action = problem.𝒜[action_idx];
+                
+                # compute expected value: immediate reward plus discounted future value
+                future_value = 0.0;
+                for next_state_idx ∈ eachindex(problem.𝒮)
+                    next_state = problem.𝒮[next_state_idx];
+                    transition_prob = problem.T[current_state, next_state, current_action];
+                    future_value += transition_prob * Uold[next_state];
+                end
+                
+                tmp[action_idx] = problem.R[current_state, current_action] + problem.γ * future_value;
+            end
+            
+            # bellman update: take best action
+            U[state_idx] = maximum(tmp);
+        end
+        
+        # check convergence using maximum norm
+        difference = maximum(abs.(U .- Uold));
+        if (difference < ϵ)
+            converged = true;
+        end
+        
+        counter += 1;
+    end
 
     return MyValueIterationSolution(problem, U); # wrap and return
 end
